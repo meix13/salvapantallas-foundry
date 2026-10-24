@@ -440,10 +440,17 @@ Hooks.on("renderSceneConfig", (app, html) => {
 
     let state = getSceneSlideshowConfig(scene);
 
-    // Localizar pestaña Básico y el fieldset del Fondo de la escena
-    const basicsTab = root.querySelector('[data-tab="basics"]') || root.querySelector("form") || root;
-    const bgInput = basicsTab.querySelector('[name="background.src"], [name$=".background.src"]');
-    const bgFieldset = bgInput?.closest("fieldset");
+    // Localizar la barra de pestañas (<nav>) y los paneles de contenido (div.tab),
+    // evitando explícitamente coincidir con los enlaces <a data-tab="..."> del <nav>
+    const navBar = root.querySelector("nav.sheet-tabs, nav.tabs");
+    const miscNavItem = navBar?.querySelector('[data-tab="misc"]');
+    const miscPanel =
+        root.querySelector('div.tab[data-tab="misc"], section.tab[data-tab="misc"]') ||
+        root.querySelector('div.tab[data-tab="basics"], section.tab[data-tab="basics"]');
+
+    if (!miscPanel) return;
+
+    const bgInput = root.querySelector('[name="background.src"], [name$=".background.src"]');
 
     const box = document.createElement("div");
     box.className = "spf-scene-config-box";
@@ -726,10 +733,52 @@ Hooks.on("renderSceneConfig", (app, html) => {
 
     renderBoxContent();
 
-    if (bgFieldset && bgFieldset.parentNode) {
-        bgFieldset.insertAdjacentElement("afterend", box);
+    // Crear una pestaña propia "Salvapantallas" en la barra de navegación superior de SceneConfig
+    if (navBar && miscNavItem && miscPanel.parentElement) {
+        const spfNavItem = document.createElement(miscNavItem.tagName.toLowerCase());
+        spfNavItem.className = miscNavItem.className.replace(/\bactive\b/g, "").trim() + " spf-nav-item";
+        if (spfNavItem.tagName === "BUTTON") spfNavItem.type = "button";
+        spfNavItem.innerHTML = `<i class="fa-solid fa-images"></i> <span>Salvapantallas</span>`;
+        navBar.appendChild(spfNavItem);
+
+        const spfPanel = document.createElement("div");
+        spfPanel.className = "tab scrollable spf-tab-panel";
+        spfPanel.dataset.group = miscPanel.dataset.group || "sheet";
+        spfPanel.appendChild(box);
+        miscPanel.insertAdjacentElement("afterend", spfPanel);
+
+        // Al pulsar la pestaña "Salvapantallas", desactivar las demás y activar la nuestra
+        spfNavItem.addEventListener("click", (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+
+            navBar.querySelectorAll(".active").forEach(el => el.classList.remove("active"));
+            spfNavItem.classList.add("active");
+
+            miscPanel.parentElement.querySelectorAll(":scope > .tab").forEach(el => el.classList.remove("active"));
+            spfPanel.classList.add("active");
+        });
+
+        // Al pulsar cualquier pestaña nativa de Foundry, desactivar "Salvapantallas" y asegurar que la nativa se muestre
+        navBar.addEventListener("click", (ev) => {
+            const clickedNative = ev.target.closest("[data-tab]");
+            if (clickedNative && clickedNative !== spfNavItem) {
+                const tabId = clickedNative.dataset.tab;
+                spfNavItem.classList.remove("active");
+                spfPanel.classList.remove("active");
+
+                clickedNative.classList.add("active");
+                const nativePanel = miscPanel.parentElement.querySelector(
+                    `div.tab[data-tab="${tabId}"], section.tab[data-tab="${tabId}"]`
+                );
+                if (nativePanel) {
+                    nativePanel.classList.add("active");
+                }
+            }
+        });
     } else {
-        basicsTab.appendChild(box);
+        // Fallback: añadir al final del panel de Miscelánea
+        miscPanel.appendChild(box);
     }
 });
 
@@ -896,3 +945,4 @@ Hooks.on("renderSceneDirectory", (app, html) => {
         headerActions.appendChild(btn);
     }
 });
+
