@@ -18,3 +18,4 @@ URL del Manifiesto:
 ```text
 https://raw.githubusercontent.com/meix13/salvapantallas-foundry/main/module.json
 ```
+
