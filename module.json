@@ -1,0 +1,25 @@
+{
+  "id": "salvapantallas-foundry",
+  "title": "Salvapantallas de Escena (Carrusel de Fondos)",
+  "description": "Permite configurar 2 o más imágenes de fondo (de las mismas proporciones) en cualquier escena para que cambien automáticamente cada X segundos (por defecto 20s) con un fundido suave tipo salvapantallas, sin recargar el lienzo.",
+  "version": "1.0.0",
+  "compatibility": {
+    "minimum": "12",
+    "verified": "14.369",
+    "maximum": "14"
+  },
+  "authors": [
+    {
+      "name": "Miguel Ángel Lucas"
+    }
+  ],
+  "esmodules": [
+    "scripts/salvapantallas.js"
+  ],
+  "styles": [
+    "styles/salvapantallas.css"
+  ],
+  "url": "https://github.com/meix13/salvapantallas-foundry",
+  "manifest": "https://raw.githubusercontent.com/meix13/salvapantallas-foundry/main/module.json",
+  "download": "https://github.com/meix13/salvapantallas-foundry/archive/refs/heads/main.zip"
+}
